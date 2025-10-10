@@ -9,8 +9,6 @@ class Money {
     unsigned char* digits_;
     size_t size_;
 
-    void normalize();
-
     void allocateMemory(size_t size);
     void deallocateMemory();
 
@@ -28,28 +26,17 @@ class Money {
 
     ~Money();
 
-    Money& operator=(const Money& other);
-    Money& operator=(Money&& other) noexcept;
+    static Money add(const Money&, const Money&);
+    static Money subtract(const Money&, const Money&);
 
-    Money operator+(const Money& other) const;
-    Money operator-(const Money& other) const;
-    Money operator*(const Money& other) const;
-    Money operator/(const Money& other) const;
+    static bool equals(const Money&, const Money&);
+    static bool notEquals(const Money&, const Money&);
+    static bool greater(const Money&, const Money&);
+    static bool less(const Money&, const Money&);
+    static bool greaterOrEqual(const Money&, const Money&);
+    static bool lessOrEqual(const Money&, const Money&);
 
-    Money& operator+=(const Money& other);
-    Money& operator-=(const Money& other);
-    Money& operator*=(const Money& other);
-    Money& operator/=(const Money& other);
-
-    bool operator==(const Money& other) const;
-    bool operator!=(const Money& other) const;
-    bool operator>=(const Money& other) const;
-    bool operator<=(const Money& other) const;
-    bool operator>(const Money& other) const;
-    bool operator<(const Money& other) const;
-
-    friend std::ostream& operator<<(std::ostream& os, const Money& money);
-    friend std::istream& operator>>(std::istream& is, Money& money);
+    static Money copy(const Money& other);
 
     size_t getSize() const;
     const unsigned char* getDigits() const;

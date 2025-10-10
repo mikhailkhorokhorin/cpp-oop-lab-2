@@ -1,13 +1,5 @@
 #include "../include/money.h"
 
-void Money::normalize() {
-    if (!digits_ || size_ <= 2)
-        return;
-
-    while (size_ > 2 && digits_[size_ - 1] == 0)
-        --size_;
-}
-
 void Money::allocateMemory(size_t size) {
     digits_ = new unsigned char[size];
     size_ = size;
@@ -44,8 +36,6 @@ void Money::parseString(const std::string& amount) {
 
     for (size_t i = 0; i < size; ++i)
         digits_[i] = digits[size - i - 1] - '0';
-
-    normalize();
 }
 
 void Money::parseDouble(double amount) {
@@ -68,8 +58,6 @@ void Money::parseDouble(double amount) {
         digits_[i] = number % 10;
         number /= 10;
     }
-
-    normalize();
 }
 
 Money::Money() : digits_(nullptr), size_(0) {
@@ -86,185 +74,106 @@ Money::Money(double amount) : digits_(nullptr), size_(0) {
 }
 
 Money::Money(const Money& other) : digits_(nullptr), size_(0) {
-    *this = other;
+    allocateMemory(other.size_);
+    for (size_t i = 0; i < other.size_; ++i)
+        digits_[i] = other.digits_[i];
 }
 
-Money::Money(Money&& other) noexcept : digits_(nullptr), size_(0) {
-    *this = std::move(other);
+Money::Money(Money&& other) noexcept : digits_(other.digits_), size_(other.size_) {
+    other.digits_ = nullptr;
+    other.size_ = 0;
 }
 
 Money::~Money() {
     deallocateMemory();
 }
 
-Money& Money::operator=(const Money& other) {
-    if (this == &other)
-        return *this;
+Money Money::add(const Money& a, const Money& b) {
+    size_t size = std::max(a.size_, b.size_) + 1;
+    Money result;
 
-    deallocateMemory();
-    allocateMemory(other.size_);
+    result.deallocateMemory();
+    result.allocateMemory(size);
 
-    for (size_t i = 0; i < other.size_; ++i)
-        digits_[i] = other.digits_[i];
-
-    return *this;
-}
-
-Money& Money::operator=(Money&& other) noexcept {
-    if (this != &other) {
-        deallocateMemory();
-
-        digits_ = other.digits_;
-        size_ = other.size_;
-
-        other.digits_ = nullptr;
-        other.size_ = 0;
-    }
-
-    return *this;
-}
-
-Money Money::operator+(const Money& other) const {
-    return Money(*this) += other;
-}
-
-Money Money::operator-(const Money& other) const {
-    return Money(*this) -= other;
-}
-
-Money Money::operator*(const Money& other) const {
-    return Money(*this) *= other;
-}
-Money Money::operator/(const Money& other) const {
-    return Money(*this) /= other;
-}
-
-Money& Money::operator+=(const Money& other) {
-    size_t size = std::max(size_, other.size_) + 1;
-    unsigned char* digits = new unsigned char[size]{};
     unsigned carry = 0;
 
     for (size_t i = 0; i < size - 1; ++i) {
         unsigned value = carry;
+        if (i < a.size_)
+            value += a.digits_[i];
+        if (i < b.size_)
+            value += b.digits_[i];
 
-        if (i < size_)
-            value += digits_[i];
-
-        if (i < other.size_)
-            value += other.digits_[i];
-
-        digits[i] = value % 10;
+        result.digits_[i] = value % 10;
         carry = value / 10;
     }
 
-    digits[size - 1] = carry;
-
-    deallocateMemory();
-
-    digits_ = digits;
-    size_ = size;
-
-    normalize();
-
-    return *this;
+    result.digits_[size - 1] = carry;
+    return result;
 }
 
-Money& Money::operator-=(const Money& other) {
-    if (*this < other)
-        throw std::invalid_argument("Result number can not be negative.");
+Money Money::subtract(const Money& a, const Money& b) {
+    if (less(a, b))
+        throw std::invalid_argument("Result cannot be negative.");
 
+    Money result = a;
     unsigned carry = 0;
 
-    for (size_t i = 0; i < size_; ++i) {
-        int diff = digits_[i] - (i < other.size_ ? other.digits_[i] : 0) - carry;
+    for (size_t i = 0; i < result.size_; ++i) {
+        int diff = result.digits_[i] - (i < b.size_ ? b.digits_[i] : 0) - carry;
         carry = diff < 0;
-        digits_[i] = static_cast<unsigned char>(diff + (carry ? 10 : 0));
+        result.digits_[i] = static_cast<unsigned char>(diff + (carry ? 10 : 0));
     }
 
-    normalize();
-
-    return *this;
+    return result;
 }
 
-Money& Money::operator*=(const Money& other) {
-    size_t size = size_ + other.size_;
-    unsigned char* digits = new unsigned char[size]{};
-
-    for (size_t i = 0; i < size_; ++i) {
-        unsigned carry = 0;
-
-        for (size_t j = 0; j < other.size_; ++j) {
-            unsigned value = digits_[i] * other.digits_[j] + digits[i + j] + carry;
-            digits[i + j] = value % 10;
-            carry = value / 10;
-        }
-
-        digits[i + other.size_] += carry;
-    }
-
-    deallocateMemory();
-
-    digits_ = digits;
-    size_ = size;
-
-    normalize();
-
-    return *this;
-}
-
-Money& Money::operator/=(const Money& other) {
-    if (other == Money("0"))
-        throw std::invalid_argument("Can not divide by zero.");
-
-    return *this = Money(this->toDouble() / other.toDouble());
-}
-
-bool Money::operator==(const Money& other) const {
-    if (size_ != other.size_)
+bool Money::equals(const Money& a, const Money& b) {
+    if (a.size_ != b.size_)
         return false;
-
-    for (size_t i = 0; i < size_; ++i) {
-        if (digits_[i] != other.digits_[i])
+    for (size_t i = 0; i < a.size_; ++i)
+        if (a.digits_[i] != b.digits_[i])
             return false;
-    }
     return true;
 }
 
-bool Money::operator!=(const Money& other) const {
-    return !(*this == other);
+bool Money::notEquals(const Money& a, const Money& b) {
+    return !equals(a, b);
 }
 
-bool Money::operator>=(const Money& other) const {
-    return !(*this < other);
-}
+bool Money::greater(const Money& a, const Money& b) {
+    if (a.size_ != b.size_)
+        return a.size_ > b.size_;
 
-bool Money::operator<=(const Money& other) const {
-    return !(*this > other);
-}
-
-bool Money::operator>(const Money& other) const {
-    if (size_ != other.size_)
-        return size_ > other.size_;
-
-    for (size_t i = size_; i > 0; --i) {
-        if (digits_[i - 1] != other.digits_[i - 1])
-            return digits_[i - 1] > other.digits_[i - 1];
+    for (size_t i = a.size_; i > 0; --i) {
+        if (a.digits_[i - 1] != b.digits_[i - 1])
+            return a.digits_[i - 1] > b.digits_[i - 1];
     }
 
     return false;
 }
 
-bool Money::operator<(const Money& other) const {
-    return other > *this;
+bool Money::less(const Money& a, const Money& b) {
+    return greater(b, a);
 }
 
-std::ostream& operator<<(std::ostream& os, const Money& money) {
-    return os << money.toString('.');
+bool Money::greaterOrEqual(const Money& a, const Money& b) {
+    return !less(a, b);
 }
 
-std::istream& operator>>(std::istream& is, Money& money) {
-    std::string str;
-    return (is >> str) ? (money.parseString(str), is) : is;
+bool Money::lessOrEqual(const Money& a, const Money& b) {
+    return !greater(a, b);
+}
+
+Money Money::copy(const Money& other) {
+    Money result;
+    result.deallocateMemory();
+    result.allocateMemory(other.size_);
+
+    for (size_t i = 0; i < other.size_; ++i)
+        result.digits_[i] = other.digits_[i];
+
+    return result;
 }
 
 size_t Money::getSize() const {
