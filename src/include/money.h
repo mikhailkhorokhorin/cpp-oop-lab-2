@@ -1,7 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include <stdexcept>
+#include <cmath>
 #include <string>
 
 class Money {
@@ -37,7 +36,7 @@ class Money {
     static bool lessOrEqual(const Money&, const Money&);
 
     static Money copy(const Money& other);
-
+    void print(char sep = '.') const;
     size_t getSize() const;
     const unsigned char* getDigits() const;
 

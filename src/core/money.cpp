@@ -1,5 +1,8 @@
 #include "../include/money.h"
 
+#include <iostream>
+#include <stdexcept>
+
 void Money::allocateMemory(size_t size) {
     digits_ = new unsigned char[size];
     size_ = size;
@@ -174,6 +177,10 @@ Money Money::copy(const Money& other) {
         result.digits_[i] = other.digits_[i];
 
     return result;
+}
+
+void Money::print(char sep) const {
+    std::cout << toString(sep) << std::endl;
 }
 
 size_t Money::getSize() const {
