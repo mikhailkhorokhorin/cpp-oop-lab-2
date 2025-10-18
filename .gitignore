@@ -1,4 +1,4 @@
-.cache/clangd/
+.cache/
 .clang-format
 build/
 

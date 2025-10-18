@@ -24,12 +24,12 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-add_executable(CPP-OOP-LABS-tests
+add_executable(tests
     src/tests/unit.cpp
     src/core/money.cpp
 )
 
-target_link_libraries(CPP-OOP-LABS-tests GTest::gtest_main)
+target_link_libraries(tests GTest::gtest_main)
 
 include(GoogleTest)
-gtest_discover_tests(CPP-OOP-LABS-tests)
+gtest_discover_tests(tests)
