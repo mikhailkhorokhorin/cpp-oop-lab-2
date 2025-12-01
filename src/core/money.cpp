@@ -1,4 +1,4 @@
-#include "../include/money.h"
+#include "../include/money.hpp"
 
 #include <iostream>
 #include <stdexcept>

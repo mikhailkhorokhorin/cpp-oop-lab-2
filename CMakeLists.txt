@@ -7,8 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(src/include)
 
 add_executable(lab
-    src/core/money.cpp
     src/main.cpp
+    src/core/money.cpp
 )
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -26,6 +26,8 @@ enable_testing()
 
 add_executable(tests
     src/tests/unit.cpp
+    src/tests/money.cpp
+
     src/core/money.cpp
 )
 
