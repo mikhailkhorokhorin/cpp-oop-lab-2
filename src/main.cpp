@@ -1,4 +1,4 @@
-#include "include/money.hpp"
+#include "money.hpp"
 
 int main() {
     Money a("100.50");

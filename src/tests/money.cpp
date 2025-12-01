@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../include/money.hpp"
+#include "money.hpp"
 
 TEST(MoneyTest, DefaultConstructor) {
     Money m;
