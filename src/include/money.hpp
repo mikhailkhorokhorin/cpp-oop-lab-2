@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cmath>
+#include <iostream>
+#include <stdexcept>
 #include <string>
 
 class Money {

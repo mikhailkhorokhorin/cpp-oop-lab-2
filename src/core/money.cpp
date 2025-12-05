@@ -1,8 +1,5 @@
 #include "money.hpp"
 
-#include <iostream>
-#include <stdexcept>
-
 void Money::allocateMemory(size_t size) {
     digits_ = new unsigned char[size];
     size_ = size;
