@@ -27,7 +27,6 @@ enable_testing()
 add_executable(tests
     src/tests/unit.cpp
     src/tests/money.cpp
-
     src/core/money.cpp
 )
 
@@ -35,3 +34,4 @@ target_link_libraries(tests GTest::gtest_main)
 
 include(GoogleTest)
 gtest_discover_tests(tests)
+
